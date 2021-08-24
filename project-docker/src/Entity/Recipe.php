@@ -13,6 +13,8 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Traits\UpdateAtTrait;
 use App\Repository\RecipeRepository;
 use App\Entity\Traits\CreatedAtTrait;
+use App\Entity\Traits\IsDeletedTrait;
+use App\Entity\Traits\NameTrait;
 
 /**
  * @ORM\Entity(repositoryClass=RecipeRepository::class)
@@ -24,11 +26,9 @@ class Recipe
     use CreatedAtTrait;
     use UpdateAtTrait;
     use SlugTrait;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private ?string $name;
+    use NameTrait;
+    use IsDeletedTrait;
+    
 
     /**
      * @ORM\Column(type="text")
@@ -48,11 +48,6 @@ class Recipe
     /**
      * @ORM\Column(type="boolean", options={"default" : 0})
      */
-    private bool $isDeleted = false;
-
-    /**
-     * @ORM\Column(type="boolean", options={"default" : 0})
-     */
     private bool $isSubmited = false;
 
     /**
@@ -63,12 +58,12 @@ class Recipe
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private ?string $urlVideo;
+    private ?string $urlVideo = null;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private ?string $descriptionVideo;
+    private ?string $descriptionVideo = null;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="recipes")
@@ -79,25 +74,37 @@ class Recipe
     /**
      * @ORM\OneToMany(targetEntity=RecipeLike::class, mappedBy="recipe")
      */
-    private $recipeLikes;
+    private Collection $recipeLikes;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="recipe")
+     */
+    private Collection $comments;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Region::class, inversedBy="recipes")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private ?Region $region;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Keyword::class, inversedBy="recipes")
+     */
+    private Collection $keyword;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Category::class, inversedBy="recipes")
+     */
+    private Collection $category;
 
     public function __construct()
     {
         $this->createdAt = new DateTimeImmutable();
         $this->recipeLikes = new ArrayCollection();
-    }
-
-
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): self
-    {
-        $this->name = $name;
-
-        return $this;
+        $this->comments = new ArrayCollection();
+        $this->categories = new ArrayCollection();
+        $this->keyword = new ArrayCollection();
+        $this->category = new ArrayCollection();
     }
 
     public function getContent(): ?string
@@ -132,18 +139,6 @@ class Recipe
     public function setIsActive(bool $isActive): self
     {
         $this->isActive = $isActive;
-
-        return $this;
-    }
-
-    public function getIsDeleted(): ?bool
-    {
-        return $this->isDeleted;
-    }
-
-    public function setIsDeleted(bool $isDeleted): self
-    {
-        $this->isDeleted = $isDeleted;
 
         return $this;
     }
@@ -234,6 +229,96 @@ class Recipe
                 $recipeLike->setRecipe(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Comment[]
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): self
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments[] = $comment;
+            $comment->setRecipe($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): self
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getRecipe() === $this) {
+                $comment->setRecipe(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getRegion(): ?Region
+    {
+        return $this->region;
+    }
+
+    public function setRegion(?Region $region): self
+    {
+        $this->region = $region;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Category[]
+     */
+    public function getCategory(): Collection
+    {
+        return $this->category;
+    }
+
+    public function addCategory(Category $category): self
+    {
+        if (!$this->category->contains($category)) {
+            $this->category[] = $category;
+        }
+
+        return $this;
+    }
+
+    public function removeCategory(Category $category): self
+    {
+        $this->category->removeElement($category); 
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Keyword[]
+     */
+    public function getKeyword(): Collection
+    {
+        return $this->keyword;
+    }
+
+    public function addKeyword(Keyword $keyword): self
+    {
+        if (!$this->keyword->contains($keyword)) {
+            $this->keyword[] = $keyword;
+        }
+
+        return $this;
+    }
+
+    public function removeKeyword(Keyword $keyword): self
+    {
+        $this->keyword->removeElement($keyword);
 
         return $this;
     }

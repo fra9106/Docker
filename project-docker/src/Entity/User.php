@@ -13,6 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
 use App\Entity\Traits\UpdateAtTrait;
 use App\Entity\Traits\CreatedAtTrait;
+use App\Entity\Traits\IsDeletedTrait;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -30,6 +31,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     use CreatedAtTrait;
     use UpdateAtTrait;
     use SlugTrait;
+    use IsDeletedTrait;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -73,11 +75,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private bool $isVerified = false;
 
     /**
-     * @ORM\Column(type="boolean", options={"default" : 0})
-     */
-    private bool $isDeleted = false;
-
-    /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private ?string $resetToken = null;
@@ -90,7 +87,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $biography;
+    private ?string $biography;
 
     /**
      * @ORM\OneToMany(targetEntity=Recipe::class, mappedBy="user")
@@ -100,7 +97,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @ORM\OneToMany(targetEntity=RecipeLike::class, mappedBy="user")
      */
-    private $recipeLikes;
+    private Collection $recipeLikes;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="user")
+     */
+    private collection $comments;
 
     public function __construct()
     {
@@ -108,6 +110,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->createdAt = new DateTimeImmutable();
         $this->recipes = new ArrayCollection();
         $this->recipeLikes = new ArrayCollection();
+        $this->comments = new ArrayCollection();
     }
 
     public function getPseudo(): ?string
@@ -254,18 +257,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getIsDeleted(): ?bool
-    {
-        return $this->isDeleted;
-    }
-
-    public function setIsDeleted(bool $isDeleted): self
-    {
-        $this->isDeleted = $isDeleted;
-
-        return $this;
-    }
-
     public function getResetToken(): ?string
     {
         return $this->resetToken;
@@ -356,6 +347,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($recipeLike->getUser() === $this) {
                 $recipeLike->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Comment[]
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): self
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments[] = $comment;
+            $comment->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): self
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getUser() === $this) {
+                $comment->setUser(null);
             }
         }
 
