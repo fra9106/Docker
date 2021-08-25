@@ -15,6 +15,7 @@ use App\Repository\KeywordRepository;
 
 /**
  * @ORM\Entity(repositoryClass=KeywordRepository::class)
+ * @ORM\Table(name="keyword", indexes={@ORM\Index(columns={"name"}, flags={"fulltext"}), @ORM\Index(columns={"slug"})})
  */
 class Keyword
 {
