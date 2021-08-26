@@ -33,12 +33,12 @@ class Recipe
     /**
      * @ORM\Column(type="text")
      */
-    private ?string $content;
+    private string $content;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private ?string $picture;
+    private string $picture;
 
     /**
      * @ORM\Column(type="boolean", options={"default" : 0})
@@ -69,17 +69,19 @@ class Recipe
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="recipes")
      * @ORM\JoinColumn(nullable=false)
      */
-    private User $user;
+    private ?User $user;
 
     /**
      * @ORM\OneToMany(targetEntity=RecipeLike::class, mappedBy="recipe")
+     * @var ArrayCollection<int, RecipeLike>
      */
-    private Collection $recipeLikes;
+    private $recipeLikes;
 
     /**
      * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="recipe")
+     * @var ArrayCollection<int, Comment>
      */
-    private Collection $comments;
+    private $comments;
 
     /**
      * @ORM\ManyToOne(targetEntity=Region::class, inversedBy="recipes")
@@ -89,22 +91,30 @@ class Recipe
 
     /**
      * @ORM\ManyToMany(targetEntity=Keyword::class, inversedBy="recipes")
+     * @var ArrayCollection<int, Keyword>
      */
-    private Collection $keyword;
+    private $keyword;
 
     /**
      * @ORM\ManyToMany(targetEntity=Category::class, inversedBy="recipes")
+     * @var ArrayCollection<int, Category>
      */
-    private Collection $category;
+    private $category;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Ingredient::class, inversedBy="recipes")
+     * @var ArrayCollection<int, Ingredient>
+     */
+    private $ingredient;
 
     public function __construct()
     {
         $this->createdAt = new DateTimeImmutable();
         $this->recipeLikes = new ArrayCollection();
         $this->comments = new ArrayCollection();
-        $this->categories = new ArrayCollection();
         $this->keyword = new ArrayCollection();
         $this->category = new ArrayCollection();
+        $this->ingredient = new ArrayCollection();
     }
 
     public function getContent(): ?string
@@ -204,7 +214,7 @@ class Recipe
     }
 
     /**
-     * @return Collection|RecipeLike[]
+     * @return ArrayCollection<int, RecipeLike>
      */
     public function getRecipeLikes(): Collection
     {
@@ -234,7 +244,7 @@ class Recipe
     }
 
     /**
-     * @return Collection|Comment[]
+     * @return ArrayCollection<int, Comment>
      */
     public function getComments(): Collection
     {
@@ -276,7 +286,7 @@ class Recipe
     }
 
     /**
-     * @return Collection|Category[]
+     * @return ArrayCollection<int, Category>
      */
     public function getCategory(): Collection
     {
@@ -300,7 +310,7 @@ class Recipe
     }
 
     /**
-     * @return Collection|Keyword[]
+     * @return ArrayCollection<int, Keyword>
      */
     public function getKeyword(): Collection
     {
@@ -319,6 +329,30 @@ class Recipe
     public function removeKeyword(Keyword $keyword): self
     {
         $this->keyword->removeElement($keyword);
+
+        return $this;
+    }
+
+    /**
+     * @return ArrayCollection<int, Ingredient>
+     */
+    public function getIngredient(): Collection
+    {
+        return $this->ingredient;
+    }
+
+    public function addIngredient(Ingredient $ingredient): self
+    {
+        if (!$this->ingredient->contains($ingredient)) {
+            $this->ingredient[] = $ingredient;
+        }
+
+        return $this;
+    }
+
+    public function removeIngredient(Ingredient $ingredient): self
+    {
+        $this->ingredient->removeElement($ingredient); 
 
         return $this;
     }

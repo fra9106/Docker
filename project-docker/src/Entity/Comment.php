@@ -29,13 +29,13 @@ class Comment
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="comments")
      * @ORM\JoinColumn(nullable=false)
      */
-    private User $user;
+    private ?User $user;
 
     /**
      * @ORM\ManyToOne(targetEntity=Recipe::class, inversedBy="comments")
      * @ORM\JoinColumn(nullable=false)
      */
-    private Recipe $recipe;
+    private ?Recipe $recipe;
 /**
      * @ORM\Column(type="string", length=255)
      */

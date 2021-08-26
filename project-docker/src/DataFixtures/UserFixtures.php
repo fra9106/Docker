@@ -6,6 +6,7 @@ use Faker\Factory;
 use App\Entity\User;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -14,6 +15,7 @@ class UserFixtures extends Fixture
 
     private UserPasswordHasherInterface $passwordEncoder;
     private SluggerInterface $slugger;
+    private ObjectManager $manager;
 
     public function __construct(UserPasswordHasherInterface $passwordEncoder, SluggerInterface $slugger)
     {
@@ -21,7 +23,7 @@ class UserFixtures extends Fixture
         $this->slugger = $slugger;
     }
 
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         $this->manager = $manager;
         $this->generateAdmin(1);
@@ -46,7 +48,7 @@ class UserFixtures extends Fixture
                 ->setIsRgpd(true)
                 ->setIsVerified(true)
                 ->setDownloadToken('admin')
-                ->setSlug($this->slugger->slug($admin->getPseudo())->lower())
+                ->setSlug($this->slugger->slug(strtolower('admin')))
                 ->setBiography('<p>' . join('</p><p>', $faker->paragraphs(3)) . '</p>');
 
             $this->manager->persist($admin);
@@ -81,7 +83,7 @@ class UserFixtures extends Fixture
                 ->setIsRgpd(true)
                 ->setIsVerified(true)
                 ->setDownloadToken('user')
-                ->setSlug($this->slugger->slug($user->getPseudo("user-{$j}-{$dateString}"))->lower())
+                ->setSlug($this->slugger->slug(strtolower("user{$j}")))
                 ->setCreatedAt($dateObject)
                 ->setBiography('<p>' . join('</p><p>', $faker->paragraphs(3)) . '</p>');
 
@@ -90,13 +92,25 @@ class UserFixtures extends Fixture
         }
     }
 
+    /**
+     * Genetate random date
+     *
+     * @param string $start
+     * @param string $end
+     * @return array{dateObject: \DateTimeImmutable, dateString: string }
+     */
     private function generateRandomDate(string $start, string $end): array
     {
-        $startDateTimestamp = (\DateTime::createFromFormat('d/m/Y', $start))->getTimestamp();
-        $endDateTimestamp = (\DateTime::createFromFormat('d/m/Y', $end))->getTimestamp();
-        $randomTimestamp = mt_rand($startDateTimestamp, $endDateTimestamp);
-        $dateTimeImmutable = (new \DateTimeImmutable())->setTimestamp($randomTimestamp);
+        $startDate = \DateTime::createFromFormat('d/m/Y', $start);
+        $endDate = \DateTime::createFromFormat('d/m/Y', $end);
 
+        if (!$startDate || !$endDate) {
+            throw new HttpException(400, 'mauvais format de date');
+        }
+
+        $randomTimestamp = mt_rand($startDate->getTimestamp(), $endDate->getTimestamp());
+        $dateTimeImmutable = (new \DateTimeImmutable())->setTimestamp($randomTimestamp);
+        
         return [
             'dateObject' => $dateTimeImmutable,
             'dateString' => $dateTimeImmutable->format('d-m-Y')

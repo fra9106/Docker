@@ -32,17 +32,18 @@ class Region
     /**
      * @ORM\Column(type="text")
      */
-    private ?string $description;
+    private string $description;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private ?string $picture;
+    private string $picture;
 
     /**
      * @ORM\OneToMany(targetEntity=Recipe::class, mappedBy="region")
+     * @var ArrayCollection<int, Recipe>
      */
-    private Collection $recipes;
+    private $recipes;
 
     public function __construct()
     {
@@ -75,7 +76,7 @@ class Region
     }
 
     /**
-     * @return Collection|Recipe[]
+     * @return ArrayCollection<int, Recipe>
      */
     public function getRecipes(): Collection
     {

@@ -9,7 +9,7 @@ use DateTimeImmutable;
 trait CreatedAtTrait 
 {
     /**
-     * @ORM\Column(type="datetime_immutable", nullable=true, options={"default" : "CURRENT_TIMESTAMP"})
+     * @ORM\Column(type="datetime_immutable", options={"default" : "CURRENT_TIMESTAMP"})
      */
     private DateTimeImmutable $createdAt;
 

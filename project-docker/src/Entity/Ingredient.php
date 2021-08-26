@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Entity\Traits\IdTrait;
-use App\Entity\Traits\IsDeletedTrait;
 use App\Entity\Traits\NameTrait;
 use App\Entity\Traits\SlugTrait;
-use App\Repository\CategoryRepository;
+use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Traits\IsDeletedTrait;
+use App\Repository\IngredientRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass=CategoryRepository::class)
- * @ORM\Table(name="category", indexes={@ORM\Index(columns={"name"}, flags={"fulltext"}), @ORM\Index(columns={"slug"})})
+ * @ORM\Entity(repositoryClass=IngredientRepository::class)
+ * @ORM\Table(name="ingredient", indexes={@ORM\Index(columns={"name"}, flags={"fulltext"}), @ORM\Index(columns={"slug"})})
  */
-class Category
+class Ingredient
 {
     use IdTrait;
     use SlugTrait;
@@ -25,7 +25,7 @@ class Category
     use NameTrait;
 
     /**
-     * @ORM\ManyToMany(targetEntity=Recipe::class, mappedBy="category")
+     * @ORM\ManyToMany(targetEntity=Recipe::class, mappedBy="ingredient")
      * @var ArrayCollection<int, Recipe>
      */
     private $recipes;
@@ -47,7 +47,7 @@ class Category
     {
         if (!$this->recipes->contains($recipe)) {
             $this->recipes[] = $recipe;
-            $recipe->addCategory($this);
+            $recipe->addIngredient($this);
         }
 
         return $this;
@@ -56,9 +56,10 @@ class Category
     public function removeRecipe(Recipe $recipe): self
     {
         if ($this->recipes->removeElement($recipe)) {
-            $recipe->removeCategory($this);
+            $recipe->removeIngredient($this);
         }
 
         return $this;
-    }  
+    }
+
 }

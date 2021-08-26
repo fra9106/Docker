@@ -7,13 +7,13 @@ namespace App\Entity;
 use DateTimeImmutable;
 use App\Entity\Traits\IdTrait;
 use App\Entity\Traits\SlugTrait;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
 use App\Entity\Traits\UpdateAtTrait;
 use App\Entity\Traits\CreatedAtTrait;
 use App\Entity\Traits\IsDeletedTrait;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -36,17 +36,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private ?string $pseudo;
+    private string $pseudo;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
      */
-    private ?string $email;
+    private string $email;
 
     /**
      * @ORM\Column(type="json")
+     * @var Array<string>
      */
-    private $roles = [];
+    private array $roles = [];
 
     /**
      * @var string The hashed password
@@ -91,18 +92,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\OneToMany(targetEntity=Recipe::class, mappedBy="user")
+     * @var ArrayCollection<int, Recipe>
      */
     private $recipes;
 
     /**
      * @ORM\OneToMany(targetEntity=RecipeLike::class, mappedBy="user")
+     * @var ArrayCollection<int, RecipeLike>
      */
-    private Collection $recipeLikes;
+    private $recipeLikes;
 
     /**
      * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="user")
+     * @var ArrayCollection<int, Comment>
      */
-    private collection $comments;
+    private $comments;
 
     public function __construct()
     {
@@ -167,6 +171,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return array_unique($roles);
     }
 
+    /**
+     * set user roles
+     *
+     * @param array<string> $roles
+     * @return self
+     */
     public function setRoles(array $roles): self
     {
         $this->roles = $roles;
@@ -203,7 +213,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @see UserInterface
      */
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
@@ -294,7 +304,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection|Recipe[]
+     * @return ArrayCollection<int, Recipe>
      */
     public function getRecipes(): Collection
     {
@@ -324,7 +334,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection|RecipeLike[]
+     * @return ArrayCollection<int, RecipeLike>
      */
     public function getRecipeLikes(): Collection
     {
@@ -354,7 +364,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection|Comment[]
+     * @return ArrayCollection<int, Comment>
      */
     public function getComments(): Collection
     {

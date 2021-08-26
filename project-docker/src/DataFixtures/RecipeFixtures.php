@@ -15,7 +15,7 @@ class RecipeFixtures extends Fixture
         $this->slugger = $slugger;
     }
 
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         
     }

@@ -26,6 +26,7 @@ class Keyword
 
     /**
      * @ORM\ManyToMany(targetEntity=Recipe::class, mappedBy="keyword")
+     * @var ArrayCollection<int, Recipe>
      */
     private Collection $recipes;
 
@@ -35,7 +36,7 @@ class Keyword
     }
 
     /**
-     * @return Collection|Recipe[]
+     * @return ArrayCollection<int, Recipe>
      */
     public function getRecipes(): Collection
     {
