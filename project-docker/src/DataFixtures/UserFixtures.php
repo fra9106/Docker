@@ -37,22 +37,22 @@ class UserFixtures extends Fixture
         $faker = Factory::create('fr_FR');
         $faker->addProvider(new \Bezhanov\Faker\Provider\Avatar($faker));
 
-        for ($i = 1; $i <= $number; $i++) {
+        $number = 0;
 
-            $admin = new User();
-            $admin->setPseudo('admin')
-                ->setEmail('admin@miam-miam.fr')
-                ->setRoles(['ROLE_ADMIN'])
-                ->setPassword($this->passwordEncoder->hashPassword($admin, 'admin'))
-                ->setAvatar('https://randomuser.me/api/portraits/men/35.jpg')
-                ->setIsRgpd(true)
-                ->setIsVerified(true)
-                ->setDownloadToken('admin')
-                ->setSlug($this->slugger->slug(strtolower('admin')))
-                ->setBiography('<p>' . join('</p><p>', $faker->paragraphs(3)) . '</p>');
+        $admin = new User();
+        $admin->setPseudo('admin')
+            ->setEmail('admin@miam-miam.fr')
+            ->setRoles(['ROLE_ADMIN'])
+            ->setPassword($this->passwordEncoder->hashPassword($admin, 'admin'))
+            ->setAvatar('https://randomuser.me/api/portraits/men/35.jpg')
+            ->setIsRgpd(true)
+            ->setIsVerified(true)
+            ->setDownloadToken('admin')
+            ->setSlug($this->slugger->slug(strtolower('admin')))
+            ->setBiography('<p>' . join('</p><p>', $faker->paragraphs(3)) . '</p>');
 
-            $this->manager->persist($admin);
-        }
+        $this->manager->persist($admin);
+        $this->addReference("user-{$number}", $admin);
     }
 
     private function generateUser(int $number): void
@@ -61,7 +61,7 @@ class UserFixtures extends Fixture
         $users = [];
         $genres = ['male', 'female'];
 
-        for ($j = 1; $j <= $number; $j++) {
+        for ($i = 1; $i <= $number; $i++) {
             $user = new User();
 
             $genre = $faker->randomElement($genres);
@@ -72,18 +72,18 @@ class UserFixtures extends Fixture
             $avatar .= ($genre == 'male' ? 'men/' : 'women/') . $pictureId;
 
             [ //destructuring
-                'dateObject' => $dateObject,
-                'dateString' => $dateString
+                'dateObject' => $dateObject
+
             ] = $this->generateRandomDate('01/01/2021', '25/08/2021');
 
-            $user->setPseudo("user{$j}")
-                ->setEmail("user{$j}@miam-miam.fr")
+            $user->setPseudo("user{$i}")
+                ->setEmail("user{$i}@miam-miam.fr")
                 ->setPassword($this->passwordEncoder->hashPassword($user, 'toto'))
                 ->setAvatar($avatar)
                 ->setIsRgpd(true)
                 ->setIsVerified(true)
                 ->setDownloadToken('user')
-                ->setSlug($this->slugger->slug(strtolower("user{$j}")))
+                ->setSlug($this->slugger->slug(strtolower("user{$i}")))
                 ->setCreatedAt($dateObject)
                 ->setBiography('<p>' . join('</p><p>', $faker->paragraphs(3)) . '</p>');
 
@@ -110,11 +110,9 @@ class UserFixtures extends Fixture
 
         $randomTimestamp = mt_rand($startDate->getTimestamp(), $endDate->getTimestamp());
         $dateTimeImmutable = (new \DateTimeImmutable())->setTimestamp($randomTimestamp);
-        
-        return [
-            'dateObject' => $dateTimeImmutable,
-            'dateString' => $dateTimeImmutable->format('d-m-Y')
-        ];
 
+        return [
+            'dateObject' => $dateTimeImmutable
+        ];
     }
 }
