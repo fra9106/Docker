@@ -18,7 +18,7 @@ class CategoryFixtures extends Fixture
 
     public function load(ObjectManager $manager): void
     {
-        $data = ['plats', 'grillades', 'salades', 'entrés', 'dessets'];
+        $data = ['plats', 'grillades', 'salades', 'entrées', 'dessets'];
 
         foreach ($data as $key => $c) {
             $category = new Category();

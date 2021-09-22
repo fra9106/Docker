@@ -32,12 +32,10 @@ class UserFixtures extends Fixture
         $this->manager->flush();
     }
 
-    private function generateAdmin(int $number): void
+    private function generateAdmin(): void
     {
         $faker = Factory::create('fr_FR');
         $faker->addProvider(new \Bezhanov\Faker\Provider\Avatar($faker));
-
-        $number = 0;
 
         $admin = new User();
         $admin->setPseudo('admin')
@@ -52,7 +50,7 @@ class UserFixtures extends Fixture
             ->setBiography('<p>' . join('</p><p>', $faker->paragraphs(3)) . '</p>');
 
         $this->manager->persist($admin);
-        $this->addReference("user-{$number}", $admin);
+        $this->addReference("admin", $admin);
     }
 
     private function generateUser(int $number): void
@@ -76,18 +74,19 @@ class UserFixtures extends Fixture
 
             ] = $this->generateRandomDate('01/01/2021', '25/08/2021');
 
-            $user->setPseudo("user{$i}")
+            $user->setPseudo("user-{$i}")
                 ->setEmail("user{$i}@miam-miam.fr")
                 ->setPassword($this->passwordEncoder->hashPassword($user, 'toto'))
                 ->setAvatar($avatar)
                 ->setIsRgpd(true)
                 ->setIsVerified(true)
                 ->setDownloadToken('user')
-                ->setSlug($this->slugger->slug(strtolower("user{$i}")))
+                ->setSlug($this->slugger->slug(strtolower("user-{$i}")))
                 ->setCreatedAt($dateObject)
                 ->setBiography('<p>' . join('</p><p>', $faker->paragraphs(3)) . '</p>');
 
             $this->manager->persist($user);
+            //$this->addReference("user-{$number}", $user);
             $users[] = $user;
         }
     }
@@ -97,7 +96,7 @@ class UserFixtures extends Fixture
      *
      * @param string $start
      * @param string $end
-     * @return array{dateObject: \DateTimeImmutable, dateString: string }
+     * @return array{dateObject: \DateTimeImmutable}
      */
     private function generateRandomDate(string $start, string $end): array
     {
